@@ -1,11 +1,15 @@
 package academy.tochkavhoda.competition;
 import academy.tochkavhoda.competition.server.*;
-import com.fasterxml.jackson.databind.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.*;
 import java.math.*;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 class TestServer {
     private static final ObjectMapper JSON=new ObjectMapper();
     private static final Instant END=Instant.parse("2030-01-01T00:00:00Z");
@@ -17,7 +21,8 @@ class TestServer {
     }
     private TestClock clock;
     private Server server;
-    @BeforeEach void setup(){clock=new TestClock();server=new Server(new BigDecimal("100"),new BigDecimal("3"),END,clock);}
+    @BeforeEach
+    void setup(){clock=new TestClock();server=new Server(new BigDecimal("100"),new BigDecimal("3"),END,clock);}
     private JsonNode ok(ServerResponse response) throws Exception {assertEquals(200,response.getResponseCode(),response.getResponseData());return JSON.readTree(response.getResponseData());}
     private void bad(ServerResponse response) throws Exception {assertEquals(400,response.getResponseCode());assertEquals(1,JSON.readTree(response.getResponseData()).size());assertFalse(JSON.readTree(response.getResponseData()).get("error").asText().isBlank());}
     private String participant(String login) throws Exception {
@@ -34,7 +39,8 @@ class TestServer {
     private String id(String id) throws Exception {return JSON.writeValueAsString(Map.of("applicationId",id));}
     private ServerResponse rate(String token,String id,int value) throws Exception {return server.rate(token,JSON.writeValueAsString(Map.of("applicationId",id,"value",value)));}
     private JsonNode find(String token,String... dirs) throws Exception {return ok(server.findApplications(token,JSON.writeValueAsString(Map.of("directions",dirs)))).get("applications");}
-    @Test void registrationSessionsAndRoles() throws Exception {
+    @Test
+    void registrationSessionsAndRoles() throws Exception {
         String p=participant("firm");String e=expert("expert","математика");
         bad(server.registerParticipant("{\"firstName\":\"А\",\"lastName\":\"Б\",\"company\":\"firm\",\"login\":\"other\",\"password\":\"secret\"}"));
         bad(server.registerExpert("{\"firstName\":\"expert\",\"lastName\":\"Петров\",\"directions\":[\"физика\"],\"login\":\"other\",\"password\":\"secret\"}"));
